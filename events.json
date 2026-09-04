@@ -115,6 +115,16 @@
       "location": "Downtown Bowling Alley",
       "startTime": "2023-03-19T18:00:00.000Z",
       "endTime": "2023-03-19T21:00:00.000Z"
+    },
+    {
+      "title": "Zaalvoetbaltoernooi",
+      "description": "Lekker binnen voetballen",
+      "image": "volgt",
+      "location": "Breda",
+      "startTime": "2026-09-15T08:00",
+      "endTime": "2026-09-15T16:00",
+      "categoryIds": ["1", "2"],
+      "id": 10
     }
   ],
   "categories": [
