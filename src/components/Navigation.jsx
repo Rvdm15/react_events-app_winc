@@ -9,7 +9,9 @@ import {
   Fieldset,
   Button,
 } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { useState, useContext } from "react";
+import { toaster } from "./ui/toaster";
+import { EventsContext } from "../context/EventsContext";
 
 export const Navigation = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,17 +21,15 @@ export const Navigation = () => {
   const [location, setLocation] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
-
-  useEffect(() => {
-    fetch("http://localhost:3000/categories")
-      .then((response) => response.json())
-      .then((data) => setCategories(data));
-  }, []);
+  const { categories, setEvents } = useContext(EventsContext);
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (selectedCategories.length === 0) {
+      alert("Selecteer minimaal één categorie.");
+      return;
+    }
     const newEvent = {
       createdBy: 1,
       title: title,
@@ -38,7 +38,7 @@ export const Navigation = () => {
       location: location,
       startTime: startTime,
       endTime: endTime,
-      categoryIds: selectedCategories,
+      categoryIds: selectedCategories.map(Number),
     };
 
     fetch("http://localhost:3000/events", {
@@ -51,6 +51,11 @@ export const Navigation = () => {
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
+        setEvents((currentEvents) => [...currentEvents, data]);
+        toaster.create({
+          title: "Event successfully added.",
+          type: "success",
+        });
         setTitle("");
         setDescription("");
         setImage("");
@@ -59,6 +64,12 @@ export const Navigation = () => {
         setEndTime("");
         setSelectedCategories([]);
         setIsModalOpen(false);
+      })
+      .catch(() => {
+        toaster.create({
+          title: "Event could not be added.",
+          type: "error",
+        });
       });
   };
   return (
@@ -86,6 +97,7 @@ export const Navigation = () => {
                       type="text"
                       value={title}
                       onChange={(event) => setTitle(event.target.value)}
+                      required
                     />
                   </Field.Root>
 
@@ -95,6 +107,7 @@ export const Navigation = () => {
                       type="text"
                       value={description}
                       onChange={(event) => setDescription(event.target.value)}
+                      required
                     />
                   </Field.Root>
 
@@ -104,6 +117,7 @@ export const Navigation = () => {
                       type="text"
                       value={image}
                       onChange={(event) => setImage(event.target.value)}
+                      required
                     />
                   </Field.Root>
 
@@ -113,6 +127,7 @@ export const Navigation = () => {
                       type="text"
                       value={location}
                       onChange={(event) => setLocation(event.target.value)}
+                      required
                     />
                   </Field.Root>
 
@@ -123,6 +138,7 @@ export const Navigation = () => {
                       value={startTime}
                       onChange={(event) => setStartTime(event.target.value)}
                       color="gray.500"
+                      required
                     />
                   </Field.Root>
 
@@ -134,6 +150,7 @@ export const Navigation = () => {
                       value={endTime}
                       onChange={(event) => setEndTime(event.target.value)}
                       color="gray.500"
+                      required
                     />
                   </Field.Root>
 

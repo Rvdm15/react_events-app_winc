@@ -5,6 +5,8 @@ import { EventsPage } from "./pages/EventsPage";
 import { Provider } from "./components/ui/provider";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Root } from "./components/Root";
+import { Toaster } from "./components/ui/toaster";
+import { EventsProvider } from "./context/EventsContext";
 
 const router = createBrowserRouter([
   {
@@ -29,7 +31,10 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Provider>
-      <RouterProvider router={router} />
+      <EventsProvider>
+        <RouterProvider router={router} />
+        <Toaster />
+      </EventsProvider>
     </Provider>
   </React.StrictMode>,
 );

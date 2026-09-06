@@ -6,34 +6,14 @@ import {
   NativeSelect,
   Skeleton,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
+import { EventsContext } from "../context/EventsContext";
 
 export const EventsPage = () => {
-  const [events, setEvents] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const { events, categories, isLoading, error } = useContext(EventsContext);
   const [searchField, setSearchField] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetch("http://localhost:3000/events") // React haalt events op
-      .then((response) => response.json()) // Backend geeft response
-      .then((data) => {
-        // Data wordt opgehaald en geplaatst.
-        setEvents(data);
-        setIsLoading(false);
-      })
-      .catch(() => {
-        setError("Events could not be loaded.");
-        setIsLoading(false);
-      });
-
-    fetch("http://localhost:3000/categories")
-      .then((response) => response.json())
-      .then((data) => setCategories(data));
-  }, []);
 
   const filteredEvents = events.filter((event) => {
     const matchesSearch = event.title
@@ -122,6 +102,7 @@ export const EventsPage = () => {
                   timeStyle: "short",
                 })}
             </p>
+
             <Image
               src={event.image}
               alt={event.title}

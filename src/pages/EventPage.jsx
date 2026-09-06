@@ -1,13 +1,37 @@
-import { Heading, Box, Image, Skeleton } from "@chakra-ui/react";
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import {
+  Heading,
+  Box,
+  Image,
+  Skeleton,
+  Button,
+  Dialog,
+  Field,
+  Input,
+  Checkbox,
+  CheckboxGroup,
+  Fieldset,
+  Flex,
+} from "@chakra-ui/react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState, useContext } from "react";
+import { EventsContext } from "../context/EventsContext";
+import { toaster } from "../components/ui/toaster";
 
 export const EventPage = () => {
   const { eventId } = useParams();
+  const navigate = useNavigate();
   const [event, setEvent] = useState(null);
-  const [categories, setCategories] = useState([]);
+  const { categories, setEvents } = useContext(EventsContext);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editImage, setEditImage] = useState("");
+  const [editLocation, setEditLocation] = useState("");
+  const [editStartTime, setEditStartTime] = useState("");
+  const [editEndTime, setEditEndTime] = useState("");
+  const [editCategories, setEditCategories] = useState([]);
 
   useEffect(() => {
     fetch(`http://localhost:3000/events/${eventId}`)
@@ -20,11 +44,88 @@ export const EventPage = () => {
         setError("Event could not be loaded.");
         setIsLoading(false);
       });
-
-    fetch("http://localhost:3000/categories")
-      .then((response) => response.json())
-      .then((data) => setCategories(data));
   }, [eventId]);
+
+  const handleDelete = () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this event?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+    fetch(`http://localhost:3000/events/$(eventId}`, {
+      method: "DELETE",
+    })
+      .then(() => {
+        setEvents((currentEvents) =>
+          currentEvents.filter((currentEvent) => currentEvent.id !== event.id),
+        );
+
+        toaster.create({
+          title: "Event successfully deleted.",
+          type: "success",
+        });
+
+        navigate("/");
+      })
+
+      .catch(() => {
+        toaster.create({
+          title: "Events could not be deleted.",
+          type: "error",
+        });
+      });
+  };
+
+  const handleEditSubmit = () => {
+    if (editCategories.length === 0) {
+      alert("Selecteer minimaal één categorie.");
+      return;
+    }
+    const updatedEvent = {
+      title: editTitle,
+      description: editDescription,
+      image: editImage,
+      location: editLocation,
+      startTime: editStartTime,
+      endTime: editEndTime,
+      categoryIds: editCategories.map(Number),
+    };
+
+    fetch(`http://localhost:3000/events/${eventId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedEvent),
+    })
+      .then((response) => response.json())
+
+      .then((data) => {
+        setEvent(data);
+
+        setEvents((currentEvents) =>
+          currentEvents.map((currentEvent) =>
+            currentEvent.id === data.id ? data : currentEvent,
+          ),
+        );
+
+        toaster.create({
+          title: "Event successfully updated.",
+          type: "success",
+        });
+
+        setIsEditModalOpen(false);
+      })
+
+      .catch(() => {
+        toaster.create({
+          title: "Event could not be updated.",
+          type: "error",
+        });
+      });
+  };
 
   if (isLoading) {
     return (
@@ -44,10 +145,29 @@ export const EventPage = () => {
 
   return (
     <Box ml="15rem">
-      <Heading mt="1rem" mb="2rem">
+      <Heading mt="1rem" mb="1rem">
         Event page
       </Heading>
+      <Flex gap="1rem">
+        <Button
+          mb="1rem"
+          onClick={() => {
+            setEditTitle(event.title);
+            setEditDescription(event.description);
+            setEditImage(event.image);
+            setEditLocation(event.location);
+            setEditStartTime(event.startTime);
+            setEditEndTime(event.endTime);
+            setEditCategories(event.categoryIds.map(String));
+            setIsEditModalOpen(true);
+          }}
+        >
+          Edit Event
+        </Button>
+        <Button onClick={handleDelete}>Delete Event</Button>
+      </Flex>
       <Heading size="md">{event?.title}</Heading>
+
       <p style={{ fontSize: "14px" }}>{event?.description}</p>
       <p style={{ fontSize: "14px" }}>
         Categories:{" "}
@@ -83,6 +203,90 @@ export const EventPage = () => {
         mt="1rem"
         mb="2rem"
       />
+      {isEditModalOpen && (
+        <Dialog.Root open={isEditModalOpen}>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>Edit Event</Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>
+                <Field.Root>
+                  <Field.Label>Title</Field.Label>
+                  <Input
+                    required
+                    value={editTitle}
+                    onChange={(event) => setEditTitle(event.target.value)}
+                  />
+                </Field.Root>
+
+                <Field.Root>
+                  <Field.Label>Description</Field.Label>
+                  <Input
+                    required
+                    value={editDescription}
+                    onChange={(event) => setEditDescription(event.target.value)}
+                  />
+                </Field.Root>
+
+                <Field.Root>
+                  <Field.Label>Image</Field.Label>
+                  <Input
+                    required
+                    value={editImage}
+                    onChange={(event) => setEditImage(event.target.value)}
+                  />
+                </Field.Root>
+
+                <Field.Root>
+                  <Field.Label>Start Time</Field.Label>
+                  <Input
+                    rewuired
+                    type="datetime-local"
+                    value={editStartTime}
+                    onChange={(event) => setEditStartTime(event.target.value)}
+                  />
+                </Field.Root>
+
+                <Field.Root>
+                  <Field.Label>End Time</Field.Label>
+                  <Input
+                    required
+                    type="datetime-local"
+                    value={editEndTime}
+                    onChange={(event) => setEditEndTime(event.target.value)}
+                  />
+                </Field.Root>
+
+                <Fieldset.Root>
+                  <Fieldset.Legend>Categories</Fieldset.Legend>
+
+                  <CheckboxGroup
+                    value={editCategories}
+                    onValueChange={(value) => setEditCategories(value)}
+                  >
+                    {categories.map((category) => (
+                      <Checkbox.Root
+                        key={category.id}
+                        value={String(category.id)}
+                      >
+                        <Checkbox.HiddenInput />
+                        <Checkbox.Control />
+                        <Checkbox.Label>{category.name}</Checkbox.Label>
+                      </Checkbox.Root>
+                    ))}
+                  </CheckboxGroup>
+                </Fieldset.Root>
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Button onClick={() => setIsEditModalOpen(false)}>Close</Button>
+                <Button onClick={handleEditSubmit}>Save Changes</Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Dialog.Root>
+      )}
     </Box>
   );
 };
