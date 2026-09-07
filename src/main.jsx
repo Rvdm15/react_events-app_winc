@@ -1,7 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "./styles/global.css";
 import { EventPage } from "./pages/EventPage";
 import { EventsPage } from "./pages/EventsPage";
+import { ContactPage } from "./pages/ContactPage";
 import { Provider } from "./components/ui/provider";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Root } from "./components/Root";
@@ -24,6 +26,7 @@ const router = createBrowserRouter([
         // loader: postLoader,
         // action: addComment,
       },
+      { path: "/contact", element: <ContactPage /> },
     ],
   },
 ]);

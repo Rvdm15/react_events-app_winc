@@ -8,6 +8,7 @@ import {
   CheckboxGroup,
   Fieldset,
   Button,
+  Box,
 } from "@chakra-ui/react";
 import { useState, useContext } from "react";
 import { toaster } from "./ui/toaster";
@@ -73,10 +74,24 @@ export const Navigation = () => {
       });
   };
   return (
-    <nav>
-      <Flex gap={2}>
+    <Box as="nav" bg="gray.100">
+      <Flex
+        gap="1rem"
+        px={{ base: "1rem", md: "2rem", lg: "4rem" }}
+        py="1rem"
+        maxW="1024px"
+        mx="auto"
+        wrap="wrap"
+        css={{
+          "& a": { fontWeight: "semibold" },
+          "& a:hover": {
+            textDecoration: "underline",
+          },
+        }}
+      >
         <Link href="/">Events</Link>
         <Link onClick={() => setIsModalOpen(true)}>Add Event</Link>
+        <Link href="/contact">Contact</Link>
       </Flex>
       {isModalOpen && (
         <Dialog.Root open={isModalOpen}>
@@ -181,6 +196,6 @@ export const Navigation = () => {
           </Dialog.Positioner>
         </Dialog.Root>
       )}
-    </nav>
+    </Box>
   );
 };

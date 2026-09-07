@@ -3,8 +3,11 @@ import {
   Image,
   Box,
   Input,
-  NativeSelect,
   Skeleton,
+  Checkbox,
+  CheckboxGroup,
+  SimpleGrid,
+  Flex,
 } from "@chakra-ui/react";
 import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
@@ -13,7 +16,7 @@ import { EventsContext } from "../context/EventsContext";
 export const EventsPage = () => {
   const { events, categories, isLoading, error } = useContext(EventsContext);
   const [searchField, setSearchField] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
   const filteredEvents = events.filter((event) => {
     const matchesSearch = event.title
@@ -21,19 +24,21 @@ export const EventsPage = () => {
       .includes(searchField.toLowerCase());
 
     const matchesCategory =
-      selectedCategory === "" ||
-      event.categoryIds.some((categoryId) =>
-        categories.some(
-          (category) =>
-            category.id === categoryId && category.name === selectedCategory,
-        ),
+      selectedCategories.length === 0 ||
+      selectedCategories.some((selectedCategory) =>
+        event.categoryIds.includes(Number(selectedCategory)),
       );
     return matchesSearch && matchesCategory;
   });
 
   if (isLoading) {
     return (
-      <Box ml="15rem" mt="1rem">
+      <Box
+        px={{ base: "1rem", md: "2rem", lg: "4rem" }}
+        maxW="1024px"
+        mx="auto"
+        mt="1rem"
+      >
         <Heading size="md" mb="1rem">
           Loading events...
         </Heading>
@@ -46,73 +51,110 @@ export const EventsPage = () => {
     return <p>{error}</p>;
   }
   return (
-    <Box ml="15rem">
-      <Heading mt="1rem" mb="1rem">
+    <Box px={{ base: "1rem", md: "2rem", lg: "4rem" }} maxW="1024px" mx="auto">
+      <Heading mt="1rem" mb="1rem" textAlign="center">
         List of events
       </Heading>
-      <Input
-        placeholder="Search events ... "
-        value={searchField}
-        onChange={(event) => setSearchField(event.target.value)}
-        mb="1rem"
-      />
-      <NativeSelect.Root mb="1rem">
-        <NativeSelect.Field
-          value={selectedCategory}
-          onChange={(event) => setSelectedCategory(event.target.value)}
+
+      <Box maxW="600px" mb="2rem" mx="auto">
+        {" "}
+        {/* Begin zoek- en filter box */}
+        <Input
+          placeholder="Search events ... "
+          value={searchField}
+          onChange={(event) => setSearchField(event.target.value)}
+          mb="1rem"
+        />
+        <CheckboxGroup
+          value={selectedCategories}
+          onValueChange={(value) => setSelectedCategories(value)}
         >
-          <option value="">All categories</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.name}>
-              {category.name}
-            </option>
-          ))}
-        </NativeSelect.Field>
-      </NativeSelect.Root>
+          <Flex gap="1rem" wrap="wrap" justify="center" mb="1rem">
+            {categories.map((category) => (
+              <Checkbox.Root key={category.id} value={String(category.id)}>
+                <Checkbox.HiddenInput />
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                <Checkbox.Label>{category.name}</Checkbox.Label>
+              </Checkbox.Root>
+            ))}
+          </Flex>
+        </CheckboxGroup>
+      </Box>
 
-      {filteredEvents.map((event) => (
-        <div key={event.id}>
-          <Link to={`/event/${event.id}`}>
-            <Heading size="md">{event.title}</Heading>
+      <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} gap="2rem" mt="2rem">
+        {filteredEvents.map((event) => (
+          <Box
+            key={event.id}
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            boxShadow="sm"
+            _hover={{
+              backgroundColor: "gray.50",
+              boxShadow: "lg",
+              transform: "transleteY(-4px)",
+            }}
+            transition="all 0.2 ease"
+          >
+            <Link to={`/event/${event.id}`}>
+              <Image
+                src={event.image}
+                alt={event.title}
+                width="100%"
+                height="200px"
+                objectFit="cover"
+                mt="0rem"
+              />
+              <Box
+                p="1rem"
+                backgroundColor="gray.50"
+                css={{
+                  "& strong": {
+                    fontWeight: "bold",
+                  },
+                  "& p": { marginTop: "0.35rem" },
+                }}
+              >
+                <Heading size="md" mb="0.5rem">
+                  {event.title}
+                </Heading>
+                <p style={{ fontSize: "14px" }}>{event.description}</p>
+                <p style={{ fontSize: "14px" }}>
+                  <strong>Categories: </strong>
+                  {event.categoryIds
+                    .map(
+                      (categoryId) =>
+                        categories.find(
+                          (category) => category.id === categoryId,
+                        )?.name,
+                    )
+                    .join(", ")}
+                </p>
 
-            <p style={{ fontSize: "14px" }}>{event.description}</p>
-            <p style={{ fontSize: "14px" }}>
-              Categories:{" "}
-              {event.categoryIds
-                .map(
-                  (categoryId) =>
-                    categories.find((category) => category.id === categoryId)
-                      ?.name,
-                )
-                .join(", ")}
-            </p>
-            <p style={{ fontSize: "14px" }}>
-              Start:{" "}
-              {event?.startTime &&
-                new Date(event.startTime).toLocaleString("nl-NL", {
-                  dateStyle: "short",
-                  timeStyle: "short",
-                })}
-            </p>
-            <p style={{ fontSize: "14px" }}>
-              End:{" "}
-              {event?.endTime &&
-                new Date(event.endTime).toLocaleString("nl-NL", {
-                  dateStyle: "short",
-                  timeStyle: "short",
-                })}
-            </p>
+                <p style={{ fontSize: "14px" }}>
+                  <strong>Start: </strong>
+                  {event?.startTime &&
+                    new Date(event.startTime).toLocaleString("nl-NL", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })}
+                </p>
 
-            <Image
-              src={event.image}
-              alt={event.title}
-              width="300px"
-              mt="1rem"
-              mb="2rem"
-            />
-          </Link>
-        </div>
-      ))}
+                <p style={{ fontSize: "14px" }}>
+                  <strong>End: </strong>
+                  {event?.endTime &&
+                    new Date(event.endTime).toLocaleString("nl-NL", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })}
+                </p>
+              </Box>
+            </Link>
+          </Box>
+        ))}
+      </SimpleGrid>
     </Box>
   );
 };

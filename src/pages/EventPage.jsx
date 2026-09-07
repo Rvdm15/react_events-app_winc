@@ -11,6 +11,7 @@ import {
   CheckboxGroup,
   Fieldset,
   Flex,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
@@ -129,7 +130,7 @@ export const EventPage = () => {
 
   if (isLoading) {
     return (
-      <Box ml="15rem" mt="1rem">
+      <Box px={{ base: "1rem", md: "2rem", lg: "4rem" }}>
         <Heading size="md" mb="1rem">
           Loading event...
         </Heading>
@@ -144,7 +145,7 @@ export const EventPage = () => {
   }
 
   return (
-    <Box ml="15rem">
+    <Box px={{ base: "1rem", md: "2rem", lg: "4rem" }} maxW="1024px" mx="auto">
       <Heading mt="1rem" mb="1rem">
         Event page
       </Heading>
@@ -166,6 +167,58 @@ export const EventPage = () => {
         </Button>
         <Button onClick={handleDelete}>Delete Event</Button>
       </Flex>
+
+      <SimpleGrid
+        columns={{ base: 1, sm: 2 }}
+        gap="2rem"
+        maxW="1000px"
+        alignItems="Start"
+      >
+        <Image
+          src={event?.image}
+          alt={event?.title}
+          width="100%"
+          maxW="600px"
+          height={{ base: "250px", md: "350px" }}
+          objectFit="cover"
+        />
+        <Box>
+          <Heading size="md" mb="0.5rem">
+            {event?.title}
+          </Heading>
+          <p style={{ fontSize: "14px" }}>{event?.description}</p>
+          <p style={{ fontSize: "14px" }}>
+            Categories:{" "}
+            {event?.categoryIds
+              .map(
+                (categoryId) =>
+                  categories.find((category) => category.id === categoryId)
+                    ?.name,
+              )
+              .join(", ")}
+          </p>
+          <p style={{ fontSize: "14px" }}>Location: {event?.location}</p>
+          <p style={{ fontSize: "14px" }}>
+            Start:{""}
+            {event?.startTime &&
+              new Date(event.startTime).toLocaleString("nl-NL", {
+                dateStyle: "short",
+                timeStyle: "short",
+              })}
+          </p>
+
+          <p style={{ fontSize: "14px" }}>
+            End:{""}
+            {event?.endTime &&
+              new Date(event.endTime).toLocaleString("nl-NL", {
+                dateStyle: "short",
+                timeStyle: "short",
+              })}
+          </p>
+        </Box>
+      </SimpleGrid>
+
+      {/*  
       <Heading size="md">{event?.title}</Heading>
 
       <p style={{ fontSize: "14px" }}>{event?.description}</p>
@@ -199,10 +252,15 @@ export const EventPage = () => {
       <Image
         src={event?.image}
         alt={event?.title}
-        width="400px"
+        width="100%"
+        maxW="600px"
+        height={{ base: "250px", md: "350px" }}
+        objectFit="cover"
         mt="1rem"
         mb="2rem"
       />
+*/}
+
       {isEditModalOpen && (
         <Dialog.Root open={isEditModalOpen}>
           <Dialog.Backdrop />
@@ -242,7 +300,7 @@ export const EventPage = () => {
                 <Field.Root>
                   <Field.Label>Start Time</Field.Label>
                   <Input
-                    rewuired
+                    required
                     type="datetime-local"
                     value={editStartTime}
                     onChange={(event) => setEditStartTime(event.target.value)}
