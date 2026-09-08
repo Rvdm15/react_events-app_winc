@@ -14,10 +14,12 @@ import { Link } from "react-router-dom";
 import { EventsContext } from "../context/EventsContext";
 
 export const EventsPage = () => {
+  // ========== CONTEXT & STATE ============================================
   const { events, categories, isLoading, error } = useContext(EventsContext);
   const [searchField, setSearchField] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
 
+  // =========== EVENTS FILTERS ==============================================
   const filteredEvents = events.filter((event) => {
     const matchesSearch = event.title
       .toLowerCase()
@@ -30,15 +32,10 @@ export const EventsPage = () => {
       );
     return matchesSearch && matchesCategory;
   });
-
+  // ========== LOADING STATE ====================================================
   if (isLoading) {
     return (
-      <Box
-        px={{ base: "1rem", md: "2rem", lg: "4rem" }}
-        maxW="1024px"
-        mx="auto"
-        mt="1rem"
-      >
+      <Box className="page-container" mt="1rem">
         <Heading size="md" mb="1rem">
           Loading events...
         </Heading>
@@ -47,23 +44,24 @@ export const EventsPage = () => {
       </Box>
     );
   }
+  // ============ ERROR STATE =======================================================
   if (error) {
     return <p>{error}</p>;
   }
   return (
-    <Box px={{ base: "1rem", md: "2rem", lg: "4rem" }} maxW="1024px" mx="auto">
+    <Box className="page-container">
       <Heading mt="1rem" mb="1rem" textAlign="center">
         List of events
       </Heading>
 
-      <Box maxW="600px" mb="2rem" mx="auto">
+      {/* =============== ZOEKEN EN FILTERS ================================================ */}
+      <Box className="search-filter">
         {" "}
         {/* Begin zoek- en filter box */}
         <Input
           placeholder="Search events ... "
           value={searchField}
           onChange={(event) => setSearchField(event.target.value)}
-          mb="1rem"
         />
         <CheckboxGroup
           value={selectedCategories}
@@ -82,47 +80,21 @@ export const EventsPage = () => {
           </Flex>
         </CheckboxGroup>
       </Box>
-
-      <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} gap="2rem" mt="2rem">
+      {/* ================== EVENTS OVERZICHT ============================================= */}
+      <SimpleGrid className="events-grid">
         {filteredEvents.map((event) => (
-          <Box
-            key={event.id}
-            borderWidth="1px"
-            borderRadius="lg"
-            overflow="hidden"
-            boxShadow="sm"
-            _hover={{
-              backgroundColor: "gray.50",
-              boxShadow: "lg",
-              transform: "transleteY(-4px)",
-            }}
-            transition="all 0.2 ease"
-          >
+          <Box key={event.id} className="event-card">
             <Link to={`/event/${event.id}`}>
-              <Image
-                src={event.image}
-                alt={event.title}
-                width="100%"
-                height="200px"
-                objectFit="cover"
-                mt="0rem"
-              />
-              <Box
-                p="1rem"
-                backgroundColor="gray.50"
-                css={{
-                  "& strong": {
-                    fontWeight: "bold",
-                  },
-                  "& p": { marginTop: "0.35rem" },
-                }}
-              >
+              <Image src={event.image} alt={event.title} />
+
+              {/* ===================== EVENT INFORMATIE ============================================== */}
+              <Box className="content-panel">
                 <Heading size="md" mb="0.5rem">
                   {event.title}
                 </Heading>
                 <p style={{ fontSize: "14px" }}>{event.description}</p>
                 <p style={{ fontSize: "14px" }}>
-                  <strong>Categories: </strong>
+                  <strong>Categories:</strong>{" "}
                   {event.categoryIds
                     .map(
                       (categoryId) =>
@@ -134,7 +106,7 @@ export const EventsPage = () => {
                 </p>
 
                 <p style={{ fontSize: "14px" }}>
-                  <strong>Start: </strong>
+                  <strong>Start:</strong>{" "}
                   {event?.startTime &&
                     new Date(event.startTime).toLocaleString("nl-NL", {
                       dateStyle: "short",
@@ -143,7 +115,7 @@ export const EventsPage = () => {
                 </p>
 
                 <p style={{ fontSize: "14px" }}>
-                  <strong>End: </strong>
+                  <strong>End:</strong>{" "}
                   {event?.endTime &&
                     new Date(event.endTime).toLocaleString("nl-NL", {
                       dateStyle: "short",

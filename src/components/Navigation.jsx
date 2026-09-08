@@ -2,7 +2,6 @@ import {
   Dialog,
   Field,
   Flex,
-  Link,
   Input,
   Checkbox,
   CheckboxGroup,
@@ -11,10 +10,12 @@ import {
   Box,
 } from "@chakra-ui/react";
 import { useState, useContext } from "react";
+import { Link } from "react-router-dom";
 import { toaster } from "./ui/toaster";
 import { EventsContext } from "../context/EventsContext";
 
 export const Navigation = () => {
+  // =================== STATE & CONTEXT ========================================
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -25,10 +26,11 @@ export const Navigation = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const { categories, setEvents } = useContext(EventsContext);
 
+  // =============== NIEUW EVENT TOEVOEGEN ===========================================
   const handleSubmit = (event) => {
     event.preventDefault();
     if (selectedCategories.length === 0) {
-      alert("Selecteer minimaal één categorie.");
+      alert("Selecteer minimaal één category.");
       return;
     }
     const newEvent = {
@@ -49,9 +51,14 @@ export const Navigation = () => {
       },
       body: JSON.stringify(newEvent),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to add event.");
+        }
+        return response.json();
+      })
+
       .then((data) => {
-        console.log(data);
         setEvents((currentEvents) => [...currentEvents, data]);
         toaster.create({
           title: "Event successfully added.",
@@ -76,11 +83,9 @@ export const Navigation = () => {
   return (
     <Box as="nav" bg="gray.100">
       <Flex
+        className="page-container"
         gap="1rem"
-        px={{ base: "1rem", md: "2rem", lg: "4rem" }}
         py="1rem"
-        maxW="1024px"
-        mx="auto"
         wrap="wrap"
         css={{
           "& a": { fontWeight: "semibold" },
@@ -89,10 +94,13 @@ export const Navigation = () => {
           },
         }}
       >
-        <Link href="/">Events</Link>
+        {/* =========== NAVIGATION ========================================= */}
+        <Link to="/">Events</Link>
         <Link onClick={() => setIsModalOpen(true)}>Add Event</Link>
-        <Link href="/contact">Contact</Link>
+        <Link to="/contact">Contact</Link>
       </Flex>
+
+      {/* ============ ADD EVENT FORMULIER ==================================== */}
       {isModalOpen && (
         <Dialog.Root open={isModalOpen}>
           <Dialog.Backdrop />
@@ -104,6 +112,8 @@ export const Navigation = () => {
               <Dialog.CloseTrigger onClick={() => setIsModalOpen(false)}>
                 Close
               </Dialog.CloseTrigger>
+
+              {/* ============== FORMULIER BODY ====================================== */}
               <Dialog.Body>
                 <form onSubmit={handleSubmit}>
                   <Field.Root>
@@ -169,7 +179,8 @@ export const Navigation = () => {
                     />
                   </Field.Root>
 
-                  <Fieldset.Root>
+                  {/* =============== CATEGORIEËN ================================================= */}
+                  <Fieldset.Root className="category-fieldset">
                     <CheckboxGroup
                       value={selectedCategories}
                       onValueChange={(value) => setSelectedCategories(value)}
@@ -189,7 +200,11 @@ export const Navigation = () => {
                       ))}
                     </CheckboxGroup>
                   </Fieldset.Root>
-                  <Button type="submit">Add Event</Button>
+
+                  {/* ============= FORMULIER KNOP ============================== */}
+                  <Button type="submit" className="add-event-button">
+                    Add Event
+                  </Button>
                 </form>
               </Dialog.Body>
             </Dialog.Content>

@@ -19,6 +19,7 @@ import { EventsContext } from "../context/EventsContext";
 import { toaster } from "../components/ui/toaster";
 
 export const EventPage = () => {
+  // ============= ROUTING, CONTEXT & STATE =============================
   const { eventId } = useParams();
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
@@ -34,9 +35,16 @@ export const EventPage = () => {
   const [editEndTime, setEditEndTime] = useState("");
   const [editCategories, setEditCategories] = useState([]);
 
+  // ==================== EVENT OPHALEN ========================================
   useEffect(() => {
     fetch(`http://localhost:3000/events/${eventId}`)
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to load event.");
+        }
+        return response.json();
+      })
+
       .then((data) => {
         setEvent(data);
         setIsLoading(false);
@@ -47,6 +55,7 @@ export const EventPage = () => {
       });
   }, [eventId]);
 
+  // ===================== EVENT VERWIJDEREN ====================================
   const handleDelete = () => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this event?",
@@ -55,10 +64,13 @@ export const EventPage = () => {
     if (!confirmed) {
       return;
     }
-    fetch(`http://localhost:3000/events/$(eventId}`, {
+    fetch(`http://localhost:3000/events/${eventId}`, {
       method: "DELETE",
     })
-      .then(() => {
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to delete event.");
+        }
         setEvents((currentEvents) =>
           currentEvents.filter((currentEvent) => currentEvent.id !== event.id),
         );
@@ -78,8 +90,9 @@ export const EventPage = () => {
         });
       });
   };
-
-  const handleEditSubmit = () => {
+  // ================== EVENT BEWERKEN EN OPSLAAN ==================================
+  const handleEditSubmit = (event) => {
+    event.preventDefault();
     if (editCategories.length === 0) {
       alert("Selecteer minimaal één categorie.");
       return;
@@ -101,7 +114,12 @@ export const EventPage = () => {
       },
       body: JSON.stringify(updatedEvent),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to update event.");
+        }
+        return response.json();
+      })
 
       .then((data) => {
         setEvent(data);
@@ -128,9 +146,10 @@ export const EventPage = () => {
       });
   };
 
+  // =================== LOADING STATE ========================================
   if (isLoading) {
     return (
-      <Box px={{ base: "1rem", md: "2rem", lg: "4rem" }}>
+      <Box className="page-container" mt="1rem">
         <Heading size="md" mb="1rem">
           Loading event...
         </Heading>
@@ -139,19 +158,20 @@ export const EventPage = () => {
       </Box>
     );
   }
-
+  // ======================= ERROR STATE =========================================
   if (error) {
     return <p>{error}</p>;
   }
 
   return (
-    <Box px={{ base: "1rem", md: "2rem", lg: "4rem" }} maxW="1024px" mx="auto">
-      <Heading mt="1rem" mb="1rem">
+    <Box className="page-container">
+      <Heading mt="2rem" mb="1rem">
         Event page
       </Heading>
-      <Flex gap="1rem">
+
+      {/* ============ EDIT & DELETE KNOPPEN ====================================== */}
+      <Flex gap="1rem" mb="2rem">
         <Button
-          mb="1rem"
           onClick={() => {
             setEditTitle(event.title);
             setEditDescription(event.description);
@@ -168,27 +188,20 @@ export const EventPage = () => {
         <Button onClick={handleDelete}>Delete Event</Button>
       </Flex>
 
-      <SimpleGrid
-        columns={{ base: 1, sm: 2 }}
-        gap="2rem"
-        maxW="1000px"
-        alignItems="Start"
-      >
+      {/* ================= EVENT DETAILS ============================================== */}
+      <SimpleGrid className="event-detail-grid">
         <Image
+          className="event-detail-image"
           src={event?.image}
           alt={event?.title}
-          width="100%"
-          maxW="600px"
-          height={{ base: "250px", md: "350px" }}
-          objectFit="cover"
         />
-        <Box>
+        <Box className="content-panel">
           <Heading size="md" mb="0.5rem">
             {event?.title}
           </Heading>
           <p style={{ fontSize: "14px" }}>{event?.description}</p>
           <p style={{ fontSize: "14px" }}>
-            Categories:{" "}
+            <strong>Categories:</strong>{" "}
             {event?.categoryIds
               .map(
                 (categoryId) =>
@@ -197,9 +210,11 @@ export const EventPage = () => {
               )
               .join(", ")}
           </p>
-          <p style={{ fontSize: "14px" }}>Location: {event?.location}</p>
           <p style={{ fontSize: "14px" }}>
-            Start:{""}
+            <strong>Location: </strong> {event?.location}
+          </p>
+          <p style={{ fontSize: "14px" }}>
+            <strong>Start:</strong>{" "}
             {event?.startTime &&
               new Date(event.startTime).toLocaleString("nl-NL", {
                 dateStyle: "short",
@@ -208,7 +223,7 @@ export const EventPage = () => {
           </p>
 
           <p style={{ fontSize: "14px" }}>
-            End:{""}
+            <strong>End:</strong>{" "}
             {event?.endTime &&
               new Date(event.endTime).toLocaleString("nl-NL", {
                 dateStyle: "short",
@@ -218,49 +233,7 @@ export const EventPage = () => {
         </Box>
       </SimpleGrid>
 
-      {/*  
-      <Heading size="md">{event?.title}</Heading>
-
-      <p style={{ fontSize: "14px" }}>{event?.description}</p>
-      <p style={{ fontSize: "14px" }}>
-        Categories:{" "}
-        {event?.categoryIds
-          .map(
-            (categoryId) =>
-              categories.find((category) => category.id === categoryId)?.name,
-          )
-          .join(", ")}
-      </p>
-      <p style={{ fontSize: "14px" }}>Location: {event?.location}</p>
-      <p style={{ fontSize: "14px" }}>
-        Start:{""}
-        {event?.startTime &&
-          new Date(event.startTime).toLocaleString("nl-NL", {
-            dateStyle: "short",
-            timeStyle: "short",
-          })}
-      </p>
-
-      <p style={{ fontSize: "14px" }}>
-        End:{""}
-        {event?.endTime &&
-          new Date(event.endTime).toLocaleString("nl-NL", {
-            dateStyle: "short",
-            timeStyle: "short",
-          })}
-      </p>
-      <Image
-        src={event?.image}
-        alt={event?.title}
-        width="100%"
-        maxW="600px"
-        height={{ base: "250px", md: "350px" }}
-        objectFit="cover"
-        mt="1rem"
-        mb="2rem"
-      />
-*/}
-
+      {/* ================ EDIT EVENT FORMULIER (MODAL) ==================================== */}
       {isEditModalOpen && (
         <Dialog.Root open={isEditModalOpen}>
           <Dialog.Backdrop />
@@ -270,77 +243,84 @@ export const EventPage = () => {
                 <Dialog.Title>Edit Event</Dialog.Title>
               </Dialog.Header>
               <Dialog.Body>
-                <Field.Root>
-                  <Field.Label>Title</Field.Label>
-                  <Input
-                    required
-                    value={editTitle}
-                    onChange={(event) => setEditTitle(event.target.value)}
-                  />
-                </Field.Root>
+                <form onSubmit={handleEditSubmit}>
+                  <Field.Root>
+                    <Field.Label>Title</Field.Label>
+                    <Input
+                      required
+                      value={editTitle}
+                      onChange={(event) => setEditTitle(event.target.value)}
+                    />
+                  </Field.Root>
 
-                <Field.Root>
-                  <Field.Label>Description</Field.Label>
-                  <Input
-                    required
-                    value={editDescription}
-                    onChange={(event) => setEditDescription(event.target.value)}
-                  />
-                </Field.Root>
+                  <Field.Root>
+                    <Field.Label>Description</Field.Label>
+                    <Input
+                      required
+                      value={editDescription}
+                      onChange={(event) =>
+                        setEditDescription(event.target.value)
+                      }
+                    />
+                  </Field.Root>
 
-                <Field.Root>
-                  <Field.Label>Image</Field.Label>
-                  <Input
-                    required
-                    value={editImage}
-                    onChange={(event) => setEditImage(event.target.value)}
-                  />
-                </Field.Root>
+                  <Field.Root>
+                    <Field.Label>Image</Field.Label>
+                    <Input
+                      required
+                      value={editImage}
+                      onChange={(event) => setEditImage(event.target.value)}
+                    />
+                  </Field.Root>
 
-                <Field.Root>
-                  <Field.Label>Start Time</Field.Label>
-                  <Input
-                    required
-                    type="datetime-local"
-                    value={editStartTime}
-                    onChange={(event) => setEditStartTime(event.target.value)}
-                  />
-                </Field.Root>
+                  <Field.Root>
+                    <Field.Label>Start Time</Field.Label>
+                    <Input
+                      required
+                      type="datetime-local"
+                      value={editStartTime}
+                      onChange={(event) => setEditStartTime(event.target.value)}
+                    />
+                  </Field.Root>
 
-                <Field.Root>
-                  <Field.Label>End Time</Field.Label>
-                  <Input
-                    required
-                    type="datetime-local"
-                    value={editEndTime}
-                    onChange={(event) => setEditEndTime(event.target.value)}
-                  />
-                </Field.Root>
+                  <Field.Root>
+                    <Field.Label>End Time</Field.Label>
+                    <Input
+                      required
+                      type="datetime-local"
+                      value={editEndTime}
+                      onChange={(event) => setEditEndTime(event.target.value)}
+                    />
+                  </Field.Root>
 
-                <Fieldset.Root>
-                  <Fieldset.Legend>Categories</Fieldset.Legend>
+                  <Fieldset.Root>
+                    <Fieldset.Legend>Categories</Fieldset.Legend>
 
-                  <CheckboxGroup
-                    value={editCategories}
-                    onValueChange={(value) => setEditCategories(value)}
-                  >
-                    {categories.map((category) => (
-                      <Checkbox.Root
-                        key={category.id}
-                        value={String(category.id)}
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control />
-                        <Checkbox.Label>{category.name}</Checkbox.Label>
-                      </Checkbox.Root>
-                    ))}
-                  </CheckboxGroup>
-                </Fieldset.Root>
+                    <CheckboxGroup
+                      value={editCategories}
+                      onValueChange={(value) => setEditCategories(value)}
+                    >
+                      {categories.map((category) => (
+                        <Checkbox.Root
+                          key={category.id}
+                          value={String(category.id)}
+                        >
+                          <Checkbox.HiddenInput />
+                          <Checkbox.Control />
+                          <Checkbox.Label>{category.name}</Checkbox.Label>
+                        </Checkbox.Root>
+                      ))}
+                    </CheckboxGroup>
+                  </Fieldset.Root>
+
+                  <Dialog.Footer>
+                    <Button onClick={() => setIsEditModalOpen(false)}>
+                      Close
+                    </Button>
+                    <Button type="submit">Save Changes</Button>
+                  </Dialog.Footer>
+                </form>
               </Dialog.Body>
-              <Dialog.Footer>
-                <Button onClick={() => setIsEditModalOpen(false)}>Close</Button>
-                <Button onClick={handleEditSubmit}>Save Changes</Button>
-              </Dialog.Footer>
             </Dialog.Content>
           </Dialog.Positioner>
         </Dialog.Root>
