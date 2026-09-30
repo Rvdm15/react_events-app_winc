@@ -1,49 +1,26 @@
-import {
-  Dialog,
-  Field,
-  Flex,
-  Input,
-  Checkbox,
-  CheckboxGroup,
-  Fieldset,
-  Button,
-  Box,
-} from "@chakra-ui/react";
+import { Dialog, Flex, Box } from "@chakra-ui/react";
 import { useState, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toaster } from "./ui/toaster";
 import { EventsContext } from "../context/EventsContext";
+import { EventForm } from "./EventForm";
 
 export const Navigation = () => {
   // =================== STATE & CONTEXT ========================================
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [image, setImage] = useState("");
-  const [location, setLocation] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const { categories, setEvents } = useContext(EventsContext);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setEvents } = useContext(EventsContext);
+  const navigate = useNavigate();
 
   // =============== NIEUW EVENT TOEVOEGEN ===========================================
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (selectedCategories.length === 0) {
-      alert("Selecteer minimaal één category.");
-      return;
-    }
+  const handleSubmit = (formData) => {
+    // formData = de gevens uit Eventform, aangevuld met createdBy
     const newEvent = {
       createdBy: 1,
-      title: title,
-      description: description,
-      image: image,
-      location: location,
-      startTime: startTime,
-      endTime: endTime,
-      categoryIds: selectedCategories.map(Number),
+      ...formData,
     };
 
+    setIsSubmitting(true);
     fetch("http://localhost:3000/events", {
       method: "POST",
       headers: {
@@ -57,29 +34,25 @@ export const Navigation = () => {
         }
         return response.json();
       })
-
       .then((data) => {
         setEvents((currentEvents) => [...currentEvents, data]);
         toaster.create({
           title: "Event successfully added.",
           type: "success",
         });
-        setTitle("");
-        setDescription("");
-        setImage("");
-        setLocation("");
-        setStartTime("");
-        setEndTime("");
-        setSelectedCategories([]);
         setIsModalOpen(false);
+        navigate(`/event/${data.id}`);
+        setIsSubmitting(false);
       })
       .catch(() => {
+        setIsSubmitting(false);
         toaster.create({
           title: "Event could not be added.",
           type: "error",
         });
       });
   };
+
   return (
     <Box as="nav" bg="gray.100">
       <Flex
@@ -115,97 +88,11 @@ export const Navigation = () => {
 
               {/* ============== FORMULIER BODY ====================================== */}
               <Dialog.Body>
-                <form onSubmit={handleSubmit}>
-                  <Field.Root>
-                    <Field.Label>Title</Field.Label>
-                    <Input
-                      type="text"
-                      value={title}
-                      onChange={(event) => setTitle(event.target.value)}
-                      required
-                    />
-                  </Field.Root>
-
-                  <Field.Root>
-                    <Field.Label>Description</Field.Label>
-                    <Input
-                      type="text"
-                      value={description}
-                      onChange={(event) => setDescription(event.target.value)}
-                      required
-                    />
-                  </Field.Root>
-
-                  <Field.Root>
-                    <Field.Label>Image</Field.Label>
-                    <Input
-                      type="text"
-                      value={image}
-                      onChange={(event) => setImage(event.target.value)}
-                      required
-                    />
-                  </Field.Root>
-
-                  <Field.Root>
-                    <Field.Label> Location</Field.Label>
-                    <Input
-                      type="text"
-                      value={location}
-                      onChange={(event) => setLocation(event.target.value)}
-                      required
-                    />
-                  </Field.Root>
-
-                  <Field.Root>
-                    <Field.Label>Start Time</Field.Label>
-                    <Input
-                      type="datetime-local"
-                      value={startTime}
-                      onChange={(event) => setStartTime(event.target.value)}
-                      color="gray.500"
-                      required
-                    />
-                  </Field.Root>
-
-                  <Field.Root>
-                    <Field.Label>End Time</Field.Label>
-
-                    <Input
-                      type="datetime-local"
-                      value={endTime}
-                      onChange={(event) => setEndTime(event.target.value)}
-                      color="gray.500"
-                      required
-                    />
-                  </Field.Root>
-
-                  {/* =============== CATEGORIEËN ================================================= */}
-                  <Fieldset.Root className="category-fieldset">
-                    <CheckboxGroup
-                      value={selectedCategories}
-                      onValueChange={(value) => setSelectedCategories(value)}
-                    >
-                      <Fieldset.Legend>Categories</Fieldset.Legend>
-                      {categories.map((category) => (
-                        <Checkbox.Root
-                          key={category.id}
-                          value={String(category.id)}
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control>
-                            <Checkbox.Indicator />
-                          </Checkbox.Control>
-                          <Checkbox.Label>{category.name}</Checkbox.Label>
-                        </Checkbox.Root>
-                      ))}
-                    </CheckboxGroup>
-                  </Fieldset.Root>
-
-                  {/* ============= FORMULIER KNOP ============================== */}
-                  <Button type="submit" className="add-event-button">
-                    Add Event
-                  </Button>
-                </form>
+                <EventForm
+                  onSubmit={handleSubmit}
+                  isSubmitting={isSubmitting}
+                  submitText="Add Event"
+                />
               </Dialog.Body>
             </Dialog.Content>
           </Dialog.Positioner>

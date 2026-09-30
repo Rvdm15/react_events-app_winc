@@ -3,13 +3,9 @@ import {
   Box,
   Image,
   Skeleton,
+  SkeletonText,
   Button,
   Dialog,
-  Field,
-  Input,
-  Checkbox,
-  CheckboxGroup,
-  Fieldset,
   Flex,
   SimpleGrid,
 } from "@chakra-ui/react";
@@ -17,6 +13,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { EventsContext } from "../context/EventsContext";
 import { toaster } from "../components/ui/toaster";
+import { EventForm } from "../components/EventForm";
 
 export const EventPage = () => {
   // ============= ROUTING, CONTEXT & STATE =============================
@@ -27,13 +24,7 @@ export const EventPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editTitle, setEditTitle] = useState("");
-  const [editDescription, setEditDescription] = useState("");
-  const [editImage, setEditImage] = useState("");
-  const [editLocation, setEditLocation] = useState("");
-  const [editStartTime, setEditStartTime] = useState("");
-  const [editEndTime, setEditEndTime] = useState("");
-  const [editCategories, setEditCategories] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // ==================== EVENT OPHALEN ========================================
   useEffect(() => {
@@ -91,28 +82,15 @@ export const EventPage = () => {
       });
   };
   // ================== EVENT BEWERKEN EN OPSLAAN ==================================
-  const handleEditSubmit = (event) => {
-    event.preventDefault();
-    if (editCategories.length === 0) {
-      alert("Selecteer minimaal één categorie.");
-      return;
-    }
-    const updatedEvent = {
-      title: editTitle,
-      description: editDescription,
-      image: editImage,
-      location: editLocation,
-      startTime: editStartTime,
-      endTime: editEndTime,
-      categoryIds: editCategories.map(Number),
-    };
+  const handleEditSubmit = (formData) => {
+    setIsSubmitting(true);
 
     fetch(`http://localhost:3000/events/${eventId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(updatedEvent),
+      body: JSON.stringify(formData),
     })
       .then((response) => {
         if (!response.ok) {
@@ -136,9 +114,11 @@ export const EventPage = () => {
         });
 
         setIsEditModalOpen(false);
+        setIsSubmitting(false);
       })
 
       .catch(() => {
+        setIsSubmitting(false);
         toaster.create({
           title: "Event could not be updated.",
           type: "error",
@@ -154,7 +134,14 @@ export const EventPage = () => {
           Loading event...
         </Heading>
 
-        <Skeleton height="300px" width="400px" />
+        <SimpleGrid className="event-detail-grid">
+          {/* Grijs blok op de plek van de afbeelding */}
+          <Skeleton height="300px" />
+          {/* Grijs balkjes op de plek van de tekst */}
+          <Box className="content-panel">
+            <SkeletonText noOfLines={6} gap="2" />
+          </Box>
+        </SimpleGrid>
       </Box>
     );
   }
@@ -168,25 +155,6 @@ export const EventPage = () => {
       <Heading mt="2rem" mb="1rem">
         Event page
       </Heading>
-
-      {/* ============ EDIT & DELETE KNOPPEN ====================================== */}
-      <Flex gap="1rem" mb="2rem">
-        <Button
-          onClick={() => {
-            setEditTitle(event.title);
-            setEditDescription(event.description);
-            setEditImage(event.image);
-            setEditLocation(event.location);
-            setEditStartTime(event.startTime);
-            setEditEndTime(event.endTime);
-            setEditCategories(event.categoryIds.map(String));
-            setIsEditModalOpen(true);
-          }}
-        >
-          Edit Event
-        </Button>
-        <Button onClick={handleDelete}>Delete Event</Button>
-      </Flex>
 
       {/* ================= EVENT DETAILS ============================================== */}
       <SimpleGrid className="event-detail-grid">
@@ -233,6 +201,15 @@ export const EventPage = () => {
         </Box>
       </SimpleGrid>
 
+      {/* ============ EDIT & DELETE KNOPPEN ====================================== */}
+      <Flex gap="1rem" mt="2rem">
+        <Button onClick={() => navigate("/")} mt="0rem">
+          Back to events
+        </Button>
+        <Button onClick={() => setIsEditModalOpen(true)}>Edit Event</Button>
+        <Button onClick={handleDelete}>Delete Event</Button>
+      </Flex>
+
       {/* ================ EDIT EVENT FORMULIER (MODAL) ==================================== */}
       {isEditModalOpen && (
         <Dialog.Root open={isEditModalOpen}>
@@ -242,84 +219,16 @@ export const EventPage = () => {
               <Dialog.Header>
                 <Dialog.Title>Edit Event</Dialog.Title>
               </Dialog.Header>
+              <Dialog.CloseTrigger onClick={() => setIsEditModalOpen(false)}>
+                Close
+              </Dialog.CloseTrigger>
               <Dialog.Body>
-                <form onSubmit={handleEditSubmit}>
-                  <Field.Root>
-                    <Field.Label>Title</Field.Label>
-                    <Input
-                      required
-                      value={editTitle}
-                      onChange={(event) => setEditTitle(event.target.value)}
-                    />
-                  </Field.Root>
-
-                  <Field.Root>
-                    <Field.Label>Description</Field.Label>
-                    <Input
-                      required
-                      value={editDescription}
-                      onChange={(event) =>
-                        setEditDescription(event.target.value)
-                      }
-                    />
-                  </Field.Root>
-
-                  <Field.Root>
-                    <Field.Label>Image</Field.Label>
-                    <Input
-                      required
-                      value={editImage}
-                      onChange={(event) => setEditImage(event.target.value)}
-                    />
-                  </Field.Root>
-
-                  <Field.Root>
-                    <Field.Label>Start Time</Field.Label>
-                    <Input
-                      required
-                      type="datetime-local"
-                      value={editStartTime}
-                      onChange={(event) => setEditStartTime(event.target.value)}
-                    />
-                  </Field.Root>
-
-                  <Field.Root>
-                    <Field.Label>End Time</Field.Label>
-                    <Input
-                      required
-                      type="datetime-local"
-                      value={editEndTime}
-                      onChange={(event) => setEditEndTime(event.target.value)}
-                    />
-                  </Field.Root>
-
-                  <Fieldset.Root>
-                    <Fieldset.Legend>Categories</Fieldset.Legend>
-
-                    <CheckboxGroup
-                      value={editCategories}
-                      onValueChange={(value) => setEditCategories(value)}
-                    >
-                      {categories.map((category) => (
-                        <Checkbox.Root
-                          key={category.id}
-                          value={String(category.id)}
-                        >
-                          <Checkbox.HiddenInput />
-                          <Checkbox.Control />
-                          <Checkbox.Label>{category.name}</Checkbox.Label>
-                        </Checkbox.Root>
-                      ))}
-                    </CheckboxGroup>
-                  </Fieldset.Root>
-
-                  <Dialog.Footer>
-                    <Button onClick={() => setIsEditModalOpen(false)}>
-                      Close
-                    </Button>
-                    <Button type="submit">Save Changes</Button>
-                  </Dialog.Footer>
-                </form>
+                <EventForm
+                  initialEvent={event}
+                  onSubmit={handleEditSubmit}
+                  isSubmitting={isSubmitting}
+                  submitText="Save Changes"
+                />
               </Dialog.Body>
             </Dialog.Content>
           </Dialog.Positioner>

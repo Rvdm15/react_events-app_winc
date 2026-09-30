@@ -4,6 +4,7 @@ import {
   Box,
   Input,
   Skeleton,
+  SkeletonText,
   Checkbox,
   CheckboxGroup,
   SimpleGrid,
@@ -40,7 +41,16 @@ export const EventsPage = () => {
           Loading events...
         </Heading>
 
-        <Skeleton height="300px" width="300px" />
+        <SimpleGrid className="events-grid">
+          {[1, 2, 3, 4, 5, 6].map((number) => (
+            <Box key={number} className="event-card">
+              <Skeleton height="200px" />
+              <Box className="content-panel">
+                <SkeletonText noOfLines={4} gap="2" />
+              </Box>
+            </Box>
+          ))}
+        </SimpleGrid>
       </Box>
     );
   }
