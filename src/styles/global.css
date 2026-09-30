@@ -24,8 +24,8 @@ GLOBAL STYLES
 
 .content-panel {
   padding: 1rem;
-  background-color: var(--chakra-colors-gray-50);
-  border: 0px solid var(--chakra-colors-gray-200);
+  background-color: var(--chakra-colors-bg-subtle);
+  border: 0px solid var(--chakra-colors-border);
   border-radius: 8px;
 }
 
