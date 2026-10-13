@@ -1,6 +1,6 @@
 import { Dialog, Flex, Box } from "@chakra-ui/react";
 import { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toaster } from "./ui/toaster";
 import { EventsContext } from "../context/EventsContext";
 import { EventForm } from "./EventForm";
@@ -12,6 +12,11 @@ export const Navigation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setEvents } = useContext(EventsContext);
   const navigate = useNavigate();
+
+  // Elke keer als je naar een andere pagina gaat, kijkt het menu opnieuw
+  useLocation();
+  // Heb je een sleutelkaart (token) in je zak? Dan ben je ingelogd
+  const isLoggedIn = localStorage.getItem("token") !== null;
 
   // =============== NIEUW EVENT TOEVOEGEN ===========================================
   const handleSubmit = (formData) => {
@@ -60,6 +65,17 @@ export const Navigation = () => {
       });
   };
 
+  // =============== UITLOGGEN ========================================
+  const handleLogout = () => {
+    // Sleutelkaart (token) weggooien
+    localStorage.removeItem("token");
+    toaster.create({
+      title: "Successfully logged out.",
+      type: "success",
+    });
+    navigate("/");
+  };
+
   return (
     <Box as="nav" bg="gray.100">
       <Flex
@@ -78,7 +94,11 @@ export const Navigation = () => {
         <Link to="/">Events</Link>
         <Link onClick={() => setIsModalOpen(true)}>Add Event</Link>
         <Link to="/contact">Contact</Link>
-        <Link to="/login">Login</Link>
+        {isLoggedIn ? (
+          <Link onClick={handleLogout}>Logout</Link>
+        ) : (
+          <Link to="/login">Login</Link>
+        )}
       </Flex>
 
       {/* ============ ADD EVENT FORMULIER ==================================== */}
