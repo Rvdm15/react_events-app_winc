@@ -4,6 +4,7 @@ import "./styles/global.css";
 import { EventPage } from "./pages/EventPage";
 import { EventsPage } from "./pages/EventsPage";
 import { ContactPage } from "./pages/ContactPage";
+import { LoginPage } from "./pages/LoginPage";
 import { Provider } from "./components/ui/provider";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Root } from "./components/Root";
@@ -27,6 +28,7 @@ const router = createBrowserRouter([
         // action: addComment,
       },
       { path: "/contact", element: <ContactPage /> },
+      { path: "/login", element: <LoginPage /> },
     ],
   },
 ]);

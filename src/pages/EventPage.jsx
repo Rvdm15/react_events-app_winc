@@ -58,6 +58,9 @@ export const EventPage = () => {
     }
     fetch(`${API_URL}/events/${eventId}`, {
       method: "DELETE",
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
     })
       .then((response) => {
         if (!response.ok) {
@@ -82,16 +85,25 @@ export const EventPage = () => {
         });
       });
   };
+
   // ================== EVENT BEWERKEN EN OPSLAAN ==================================
   const handleEditSubmit = (formData) => {
     setIsSubmitting(true);
 
     fetch(`${API_URL}/events/${eventId}`, {
-      method: "PATCH",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: localStorage.getItem("token"),
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        ...formData,
+        // Datums omzetten naar de volledige notatie die Prisma wil
+        startTime: new Date(formData.startTime).toISOString(),
+        endTime: new Date(formData.endTime).toISOString(),
+        // Categorie-id's omzetten naar tekst
+        categoryIds: formData.categoryIds.map(String),
+      }),
     })
       .then((response) => {
         if (!response.ok) {

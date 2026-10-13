@@ -17,8 +17,13 @@ export const Navigation = () => {
   const handleSubmit = (formData) => {
     // formData = de gevens uit Eventform, aangevuld met createdBy
     const newEvent = {
-      createdBy: 1,
+      createdBy: "1",
       ...formData,
+      // Datums omzetten naar de volledige notatie die Prisma wil
+      startTime: new Date(formData.startTime).toISOString(),
+      endTime: new Date(formData.endTime).toISOString(),
+      // Categorie-id's omzetten naar tekst
+      categoryIds: formData.categoryIds.map(String),
     };
 
     setIsSubmitting(true);
@@ -26,6 +31,7 @@ export const Navigation = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: localStorage.getItem("token"),
       },
       body: JSON.stringify(newEvent),
     })
@@ -72,6 +78,7 @@ export const Navigation = () => {
         <Link to="/">Events</Link>
         <Link onClick={() => setIsModalOpen(true)}>Add Event</Link>
         <Link to="/contact">Contact</Link>
+        <Link to="/login">Login</Link>
       </Flex>
 
       {/* ============ ADD EVENT FORMULIER ==================================== */}
