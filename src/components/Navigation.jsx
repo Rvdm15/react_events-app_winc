@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toaster } from "./ui/toaster";
 import { EventsContext } from "../context/EventsContext";
 import { EventForm } from "./EventForm";
+import { API_URL } from "../config";
 
 export const Navigation = () => {
   // =================== STATE & CONTEXT ========================================
@@ -21,7 +22,7 @@ export const Navigation = () => {
     };
 
     setIsSubmitting(true);
-    fetch("http://localhost:3000/events", {
+    fetch(`${API_URL}/events`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

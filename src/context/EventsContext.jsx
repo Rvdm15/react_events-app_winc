@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState } from "react";
+import { API_URL } from "../config";
 
 // ============= CONTEXT AANMAKEN ========================================
 export const EventsContext = createContext();
@@ -12,7 +13,7 @@ export const EventsProvider = ({ children }) => {
 
   // ============ EVENTS & CATEGORIEËN OPHALEN ============================
   useEffect(() => {
-    fetch("http://localhost:3000/events")
+    fetch(`${API_URL}/events`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to load events.");
@@ -29,7 +30,7 @@ export const EventsProvider = ({ children }) => {
         setIsLoading(false);
       });
 
-    fetch("http://localhost:3000/categories")
+    fetch(`${API_URL}/categories`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to load categories.");

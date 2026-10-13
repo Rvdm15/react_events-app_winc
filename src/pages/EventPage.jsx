@@ -14,6 +14,7 @@ import { useEffect, useState, useContext } from "react";
 import { EventsContext } from "../context/EventsContext";
 import { toaster } from "../components/ui/toaster";
 import { EventForm } from "../components/EventForm";
+import { API_URL } from "../config";
 
 export const EventPage = () => {
   // ============= ROUTING, CONTEXT & STATE =============================
@@ -28,7 +29,7 @@ export const EventPage = () => {
 
   // ==================== EVENT OPHALEN ========================================
   useEffect(() => {
-    fetch(`http://localhost:3000/events/${eventId}`)
+    fetch(`${API_URL}/events/${eventId}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to load event.");
@@ -55,7 +56,7 @@ export const EventPage = () => {
     if (!confirmed) {
       return;
     }
-    fetch(`http://localhost:3000/events/${eventId}`, {
+    fetch(`${API_URL}/events/${eventId}`, {
       method: "DELETE",
     })
       .then((response) => {
@@ -85,7 +86,7 @@ export const EventPage = () => {
   const handleEditSubmit = (formData) => {
     setIsSubmitting(true);
 
-    fetch(`http://localhost:3000/events/${eventId}`, {
+    fetch(`${API_URL}/events/${eventId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
