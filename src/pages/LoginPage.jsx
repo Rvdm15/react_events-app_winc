@@ -1,4 +1,4 @@
-import { Box, Heading, Input, Button, Stack } from "@chakra-ui/react";
+import { Box, Heading, Input, Button, Stack, Flex } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toaster } from "../components/ui/toaster";
@@ -10,6 +10,7 @@ export const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   // ============= INLOGGEN ==========================================
   const handleSubmit = (e) => {
@@ -58,12 +59,23 @@ export const LoginPage = () => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          <Input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+
+          <Flex gap="0.5rem">
+            <Input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </Button>
+          </Flex>
+
           <Button type="submit" loading={isSubmitting}>
             Login
           </Button>
