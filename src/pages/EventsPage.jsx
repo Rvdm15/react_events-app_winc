@@ -29,7 +29,7 @@ export const EventsPage = () => {
     const matchesCategory =
       selectedCategories.length === 0 ||
       selectedCategories.some((selectedCategory) =>
-        event.categoryIds.includes(Number(selectedCategory)),
+        event.categoryIds.includes(selectedCategory),
       );
     return matchesSearch && matchesCategory;
   });
