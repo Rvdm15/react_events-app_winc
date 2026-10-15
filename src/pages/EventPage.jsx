@@ -27,6 +27,9 @@ export const EventPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Heb je een sleutelkaart (token) in je zak? Dan ben je ingelogd
+  const isLoggedIn = localStorage.getItem("token") !== null;
+
   // ==================== EVENT OPHALEN ========================================
   useEffect(() => {
     fetch(`${API_URL}/events/${eventId}`)
@@ -219,8 +222,12 @@ export const EventPage = () => {
         <Button onClick={() => navigate("/")} mt="0rem">
           Back to events
         </Button>
-        <Button onClick={() => setIsEditModalOpen(true)}>Edit Event</Button>
-        <Button onClick={handleDelete}>Delete Event</Button>
+        {isLoggedIn && (
+          <>
+            <Button onClick={() => setIsEditModalOpen(true)}>Edit Event</Button>
+            <Button onClick={handleDelete}>Delete Event</Button>
+          </>
+        )}
       </Flex>
 
       {/* ================ EDIT EVENT FORMULIER (MODAL) ==================================== */}

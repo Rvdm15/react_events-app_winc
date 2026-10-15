@@ -92,7 +92,9 @@ export const Navigation = () => {
       >
         {/* =========== NAVIGATION ========================================= */}
         <Link to="/">Events</Link>
-        <Link onClick={() => setIsModalOpen(true)}>Add Event</Link>
+        {isLoggedIn && (
+          <Link onClick={() => setIsModalOpen(true)}>Add Event</Link>
+        )}
         <Link to="/contact">Contact</Link>
         {isLoggedIn ? (
           <Link onClick={handleLogout}>Logout</Link>
